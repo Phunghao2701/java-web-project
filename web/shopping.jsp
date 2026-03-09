@@ -31,23 +31,7 @@
         %>
         <h1>Welcome to my Store</h1>
         <form action="MainController"  method="POST">
-            <!--            <select name="product">
-                            <option value="P001-T Shirt-15">T Shirt-15$</option>
-                            <option value="P002-Pant-15">Pant-15$</option>
-                            <option value="P003-Dress-20">Dress-20$</option>
-                            <option value="P004-Short-10">Short-10$</option>
-                            <option value="P005-Hat-50">Hat-50$</option>
-                            <option value="P006-Balo-30">Balo-30$</option>
-                        </select>
-            
-                        <select name="quantity">
-                            <option value="1">1 item</option>
-                            <option value="2">2 items</option>
-                            <option value="3">3 items</option>
-                            <option value="4">4 items</option>
-                            <option value="5">5 items</option>
-                            <option value="10">10 items</option>
-                        </select>-->
+
             <select name="product">
                 <%
                     if (listProduct != null) {

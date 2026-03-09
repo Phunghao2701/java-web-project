@@ -33,25 +33,17 @@ public class AddController extends HttpServlet {
         response.setContentType("text/html;charset=UTF-8");
         String url = ERROR;
         try {
-//            String strProduct = request.getParameter("product");
-//            String[] arrayProduct = strProduct.split("-");
-//            String id = arrayProduct[0];
-//            String name = arrayProduct[1];
-//            double price = Double.parseDouble(arrayProduct[2]);
-            String pid = request.getParameter("product");
+            String rawProduct = request.getParameter("product");
+            String pid = rawProduct;
+            if (rawProduct != null && rawProduct.contains("-")) {
+                pid = rawProduct.split("-", 2)[0];
+            }
             int quantity = Integer.parseInt(request.getParameter("quantity"));
-//            Product product = new Product(id, name, price, quantity);
-//            HttpSession session = request.getSession();
-//            Cart cart = (Cart) session.getAttribute("CART");
-//            if (cart == null) {
-//                cart = new Cart();
-//            }
-//            boolean check = cart.add(product);
-//            if (check) {
-//                session.setAttribute("CART", cart);
-//                request.setAttribute("MESSAGE", "Added " + quantity + " items " + name);
-//                url = SUCCESS;
-
+            if (pid == null || pid.trim().isEmpty()) {
+                request.setAttribute("MESSAGE", "Invalid product");
+                return;
+            }
+            pid = pid.trim();
             OrderDAO dao = new OrderDAO();
             Product dbProduct = dao.getProductById(pid);
 
@@ -74,6 +66,7 @@ public class AddController extends HttpServlet {
                 }
             }
         } catch (Exception e) {
+            request.setAttribute("MESSAGE", "Cannot add product to cart");
             log("Error at AddController: " + e.toString());
         } finally {
             request.getRequestDispatcher(url).forward(request, response);

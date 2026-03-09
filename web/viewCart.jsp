@@ -90,7 +90,7 @@
     <%
         }
     %>
-    <!--    </br><a href="shopping.jsp">Mua them di !!!</a>-->
+
     <a href="LoadProductController">Mua them di !!!</a>
 </body>
 </html>

@@ -41,9 +41,9 @@ public class OrderDAO {
 
     public void insertOrderDetail(int orderID, String pid, double price, int quantity) throws Exception {
         String sql = "INSERT INTO OrderDetail(oid, pid, price, quantity) VALUES(?,?,?,?)";
-        try ( Connection conn = DBUtils.getConnection();  PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (Connection conn = DBUtils.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, orderID);
-            ps.setInt(2, Integer.parseInt(pid));
+            ps.setString(2, pid);
             ps.setDouble(3, price);
             ps.setInt(4, quantity);
             ps.executeUpdate();
@@ -52,19 +52,20 @@ public class OrderDAO {
 
     public boolean updateProductQuantity(String pid, int quantity) throws Exception {
         String sql = "UPDATE Product SET quantity = quantity - ? WHERE pid = ? AND quantity >= ?";
-        try ( Connection conn = DBUtils.getConnection();  PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (Connection conn = DBUtils.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, quantity);
-            ps.setInt(2, Integer.parseInt(pid));
+            ps.setString(2, pid);
             ps.setInt(3, quantity);
             return ps.executeUpdate() > 0;
         }
     }
 
+
     public Product getProductById(String pid) throws Exception {
         String sql = "SELECT pid, name, price, quantity FROM Product WHERE pid = ?";
-        try ( Connection conn = DBUtils.getConnection();  PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, Integer.parseInt(pid));
-            try ( ResultSet rs = ps.executeQuery()) {
+        try (Connection conn = DBUtils.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, pid);
+            try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     return new Product(
                             rs.getString("pid"),
@@ -80,12 +81,12 @@ public class OrderDAO {
 
     public int createOrder(String userID, float total) throws Exception {
         String sql = "INSERT INTO Orders(date, total, userID) OUTPUT INSERTED.oid VALUES(?,?,?)";
-        try ( Connection conn = DBUtils.getConnection();  PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (Connection conn = DBUtils.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setDate(1, new Date(System.currentTimeMillis()));
             ps.setFloat(2, total);
             ps.setString(3, userID);
 
-            try ( ResultSet rs = ps.executeQuery()) {
+            try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     return rs.getInt(1);
                 }
@@ -93,4 +94,6 @@ public class OrderDAO {
         }
         return 0;
     }
+
+
 }
