@@ -5,6 +5,7 @@
 package fa26.t2s2.controllers;
 
 import fa26.t2s2.shopping.Cart;
+import fa26.t2s2.shopping.OrderDAO;
 import fa26.t2s2.shopping.Product;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -22,34 +23,58 @@ import javax.servlet.http.HttpSession;
 @WebServlet(name = "AddController", urlPatterns = {"/AddController"})
 public class AddController extends HttpServlet {
 
-    private static final String ERROR = "shopping.jsp";
-    private static final String SUCCESS = "shopping.jsp";
+//    private static final String ERROR = "shopping.jsp";
+//    private static final String SUCCESS = "shopping.jsp";
+    private static final String ERROR = "LoadProductController";
+    private static final String SUCCESS = "LoadProductController";
 
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");
         String url = ERROR;
         try {
-            String strProduct = request.getParameter("product");
-            String[] arrayProduct = strProduct.split("-");
-            String id = arrayProduct[0];
-            String name = arrayProduct[1];
-            double price = Double.parseDouble(arrayProduct[2]);
+//            String strProduct = request.getParameter("product");
+//            String[] arrayProduct = strProduct.split("-");
+//            String id = arrayProduct[0];
+//            String name = arrayProduct[1];
+//            double price = Double.parseDouble(arrayProduct[2]);
+            String pid = request.getParameter("product");
             int quantity = Integer.parseInt(request.getParameter("quantity"));
-            Product product = new Product(id, name, price, quantity);
-            HttpSession session = request.getSession();
-            Cart cart = (Cart) session.getAttribute("CART");
-            if (cart == null) {
-                cart = new Cart();
-            }
-            boolean check = cart.add(product);
-            if (check) {
-                session.setAttribute("CART", cart);
-                request.setAttribute("MESSAGE", "Added " + quantity + " items " + name);
-                url = SUCCESS;
+//            Product product = new Product(id, name, price, quantity);
+//            HttpSession session = request.getSession();
+//            Cart cart = (Cart) session.getAttribute("CART");
+//            if (cart == null) {
+//                cart = new Cart();
+//            }
+//            boolean check = cart.add(product);
+//            if (check) {
+//                session.setAttribute("CART", cart);
+//                request.setAttribute("MESSAGE", "Added " + quantity + " items " + name);
+//                url = SUCCESS;
+
+            OrderDAO dao = new OrderDAO();
+            Product dbProduct = dao.getProductById(pid);
+
+            if (dbProduct == null) {
+                request.setAttribute("MESSAGE", "Product not found");
+            } else if (quantity > dbProduct.getQuantity()) {
+                request.setAttribute("MESSAGE", "Only " + dbProduct.getQuantity() + " items left for " + dbProduct.getName());
+            } else {
+                Product product = new Product(dbProduct.getPid(), dbProduct.getName(), dbProduct.getPrice(), quantity);
+                HttpSession session = request.getSession();
+                Cart cart = (Cart) session.getAttribute("CART");
+                if (cart == null) {
+                    cart = new Cart();
+                }
+                boolean check = cart.add(product);
+                if (check) {
+                    session.setAttribute("CART", cart);
+                    request.setAttribute("MESSAGE", "Added " + quantity + " items " + dbProduct.getName());
+                    url = SUCCESS;
+                }
             }
         } catch (Exception e) {
-            log("Erro at AddController: " + e.toString());
+            log("Error at AddController: " + e.toString());
         } finally {
             request.getRequestDispatcher(url).forward(request, response);
         }

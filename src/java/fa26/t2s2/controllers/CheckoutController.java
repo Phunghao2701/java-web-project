@@ -26,8 +26,10 @@ import javax.servlet.http.HttpSession;
 @WebServlet(name = "CheckoutController", urlPatterns = {"/CheckoutController"})
 public class CheckoutController extends HttpServlet {
 
-    private static final String ERROR = "shopping.jsp";
-    private static final String SUCCESS = "viewCart.jsp";
+//    private static final String ERROR = "shopping.jsp";
+//    private static final String SUCCESS = "viewCart.jsp";
+    private static final String ERROR = "LoadProductController";
+    private static final String SUCCESS = "LoadProductController";
 
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -54,25 +56,53 @@ public class CheckoutController extends HttpServlet {
 
                     int orderID = dao.createOrder(user.getUserID(), total);
 
-                    for (Product p : cart.getCart().values()) {
+//                    for (Product p : cart.getCart().values()) {
+//
+//                        dao.insertOrderDetail(
+//                                orderID,
+//                                p.getPid(),
+//                                p.getPrice(),
+//                                p.getQuantity()
+//                        );
+//
+//                        dao.updateProductQuantity(
+//                                p.getPid(),
+//                                p.getQuantity()
+//                        );
+if (orderID > 0) {
+                        boolean updatedAll = true;
+                        for (Product p : cart.getCart().values()) {
 
-                        dao.insertOrderDetail(
-                                orderID,
-                                p.getPid(),
-                                p.getPrice(),
-                                p.getQuantity()
-                        );
+                            dao.insertOrderDetail(
+                                    orderID,
+                                    p.getPid(),
+                                    p.getPrice(),
+                                    p.getQuantity()
+                            );
 
-                        dao.updateProductQuantity(
-                                p.getPid(),
-                                p.getQuantity()
-                        );
+                            boolean updated = dao.updateProductQuantity(
+                                    p.getPid(),
+                                    p.getQuantity()
+                            );
+
+                            if (!updated) {
+                                updatedAll = false;
+                            }
+                        }
+
+                        if (updatedAll) {
+                            session.removeAttribute("CART");
+                            request.setAttribute("MESSAGE", "Checkout success");
+                        } else {
+                            request.setAttribute("MESSAGE", "Checkout failed: not enough stock");
+                        }
+                        url = SUCCESS;
                     }
 
-                    session.removeAttribute("CART");
-
-                    request.setAttribute("MESSAGE", "Checkout success");
-                    url = "shopping.jsp";
+//                    session.removeAttribute("CART");
+//
+//                    request.setAttribute("MESSAGE", "Checkout success");
+//                    url = "SUCCESS";
                 }
             }
 

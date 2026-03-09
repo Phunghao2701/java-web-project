@@ -4,6 +4,7 @@
     Author     : LENOVO
 --%>
 
+<%@page import="java.text.DecimalFormat"%>
 <%@page import="fa26.t2s2.user.UserDTO"%>
 <%@page import="fa26.t2s2.shopping.Product"%>
 <%@page import="fa26.t2s2.shopping.Cart"%>
@@ -44,6 +45,7 @@
             <tbody>
                 <% int count = 1;
                     double total = 0;
+                    DecimalFormat df = new DecimalFormat("0.00");
                     for (Product product : cart.getCart().values()) {
                         total += product.getPrice() * product.getQuantity();
                 %>
@@ -54,12 +56,12 @@
                         <input type="text" name="id" value="<%= product.getPid()%>" readonly=""/>
                     </td>
                     <td><%= product.getName()%></td>
-                    <td><%= product.getPrice()%></td>
+                    <td><%= df.format(product.getPrice())%></td>
 
                     <td>
                         <input type="number" name="quantity" value="<%= product.getQuantity()%>"/>
                     </td>
-                    <td><%= product.getPrice() * product.getQuantity()%></td>
+                    <td><%= df.format(product.getPrice() * product.getQuantity())%></td>
                     <td>
                         <input type="submit" name="action" value="Edit"/>
 
@@ -76,7 +78,7 @@
             %>
         </tbody>
     </table>
-    </br>Total: <%= total%>$
+    </br>Total: <%= df.format(total)%>$
     <br/><br/>
     <form action="MainController" method="POST">
         <input type="submit" name="action" value="Checkout"/>     
@@ -88,6 +90,7 @@
     <%
         }
     %>
-    </br><a href="shopping.jsp">Mua them di !!!</a>
+    <!--    </br><a href="shopping.jsp">Mua them di !!!</a>-->
+    <a href="LoadProductController">Mua them di !!!</a>
 </body>
 </html>
