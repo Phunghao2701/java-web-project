@@ -20,7 +20,7 @@
                 return;
             }
         %>
-        <a href="shopping.jsp">Shopping</a>
+        <a href="LoadProductController">Shopping</a>
         User ID: ${sessionScope.LOGIN_USER.userID} </br>
         Full Name: ${sessionScope.LOGIN_USER.fullName} </br>
         Role ID: ${sessionScope.LOGIN_USER.roleID}</br>

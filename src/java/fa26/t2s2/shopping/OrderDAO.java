@@ -6,6 +6,7 @@ package fa26.t2s2.shopping;
 
 import fa26.t2s2.utils.DBUtils;
 import java.sql.Connection;
+import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
@@ -21,35 +22,84 @@ public class OrderDAO {
 
         List<Product> list = new ArrayList<>();
 
-        Connection conn = DBUtils.getConnection();
-        String sql = "SELECT * FROM Product";
+        String sql = "SELECT pid, name, price, quantity FROM Product WHERE quantity > 0";
 
-        PreparedStatement ps = conn.prepareStatement(sql);
-        ResultSet rs = ps.executeQuery();
+        try (Connection conn = DBUtils.getConnection(); PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
 
-        while(rs.next()){
+            while (rs.next()) {
 
-            String pid = rs.getString("pid");
-            String name = rs.getString("name");
-            float price = rs.getFloat("price");
-            int quantity = rs.getInt("quantity");
+                String pid = rs.getString("pid");
+                String name = rs.getString("name");
+                double price = rs.getDouble("price");
+                int quantity = rs.getInt("quantity");
 
-            list.add(new Product(pid,name,price,quantity));
+                list.add(new Product(pid, name, price, quantity));
+            }
         }
 
         return list;
     }
 
-    public int createOrder(String userID, float total) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    public Product getProductById(String pid) throws Exception {
+        String sql = "SELECT pid, name, price, quantity FROM Product WHERE pid = ?";
+        try (Connection conn = DBUtils.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            bindPid(ps, 1, pid);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return new Product(
+                            rs.getString("pid"),
+                            rs.getString("name"),
+                            rs.getDouble("price"),
+                            rs.getInt("quantity")
+                    );
+                }
+            }
+        }
+        return null;
     }
 
-    public void insertOrderDetail(int orderID, String pid, double price, int quantity) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    public int createOrder(String userID, float total) throws Exception {
+        String sql = "INSERT INTO Orders(date, total, userID) OUTPUT INSERTED.oid VALUES(?,?,?)";
+        try (Connection conn = DBUtils.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setDate(1, new Date(System.currentTimeMillis()));
+            ps.setFloat(2, total);
+            ps.setString(3, userID);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
+            }
+        }
+        return 0;
     }
 
-    public void updateProductQuantity(String pid, int quantity) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    public void insertOrderDetail(int orderID, String pid, double price, int quantity) throws Exception {
+        String sql = "INSERT INTO OrderDetail(oid, pid, price, quantity) VALUES(?,?,?,?)";
+        try (Connection conn = DBUtils.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, orderID);
+            bindPid(ps, 2, pid);
+            ps.setDouble(3, price);
+            ps.setInt(4, quantity);
+            ps.executeUpdate();
+        }
     }
+
+    public boolean updateProductQuantity(String pid, int quantity) throws Exception {
+        String sql = "UPDATE Product SET quantity = quantity - ? WHERE pid = ? AND quantity >= ?";
+        try (Connection conn = DBUtils.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, quantity);
+            bindPid(ps, 2, pid);
+            ps.setInt(3, quantity);
+            return ps.executeUpdate() > 0;
+        }
+    }
+    private void bindPid(PreparedStatement ps, int index, String pid) throws Exception {
+        try {
+            ps.setInt(index, Integer.parseInt(pid));
+        } catch (NumberFormatException e) {
+            ps.setString(index, pid);
+        }
+    }
+
 }
-
